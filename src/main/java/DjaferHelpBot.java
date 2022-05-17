@@ -1,10 +1,9 @@
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.Collection;
-import java.util.List;
 
 public class DjaferHelpBot extends TelegramLongPollingBot {
 
@@ -25,15 +24,12 @@ public class DjaferHelpBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
 
-            String messageUserName = update.getMessage().getFrom().getUserName();
-
             SendMessage message = new SendMessage();
             message.setChatId(update.getMessage().getChatId().toString());
-            String textMessage = update.getMessage().getText();
 
-            if (textMessage.equalsIgnoreCase("/start"))
-                message.setText("Привет, " + messageUserName);
-            else message.setText("Мне не понятно");
+            String textAnswer = generateAnswerByMessage(update.getMessage());
+
+            message.setText(textAnswer);
 
             try {
                 execute(message); // Call method to send the message
@@ -41,6 +37,22 @@ public class DjaferHelpBot extends TelegramLongPollingBot {
                 e.printStackTrace();
             }
         }
+    }
+
+    public String generateAnswerByMessage(Message message){
+        String textAnswer;
+
+        Commands getCommand = Commands.fromValue(message.getText());
+
+        switch (getCommand) {
+            case START:
+                textAnswer = "Привет, " + message.getFrom().getUserName() + ", я бот, умеющий реагировать на зарегистрированные команды!"; break;
+            case COMMANDS_LIST:
+                textAnswer = "Список команд: " + Commands.print(); break;
+            default:
+                textAnswer = "Эта команда мне не знакома"; break;
+        }
+        return textAnswer;
     }
 
 }
